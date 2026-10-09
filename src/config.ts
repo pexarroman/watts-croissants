@@ -20,8 +20,8 @@ export const GRUPO = {
   whatsapp: '',
 
   // Contacto (déjalos vacíos para ocultarlos)
-  email: '', // por ejemplo 'hola@midominio.com'
-  instagram: '', // por ejemplo 'https://instagram.com/...'
+  email: 'hola@wattcroissants.es', // por ejemplo 'hola@midominio.com'
+  instagram: 'https://www.instagram.com/instagram/', // por ejemplo 'https://instagram.com/...'
 
   // Logo del club. Está vacío a propósito: es una marca del club y hasta que no den permiso
   // no se usa. Cuando lo tengas, copia el archivo a /public/ y pon aquí, por ejemplo, '/logo.png'
