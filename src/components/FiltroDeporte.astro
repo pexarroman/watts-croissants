@@ -1,0 +1,39 @@
+---
+// Botones "Todo / 🚴 Bici / 🏃 Correr" que muestran u ocultan las tarjetas del contenedor indicado
+import { DEPORTES } from '../config';
+
+interface Props {
+  contenedor: string; // id del elemento que contiene las tarjetas
+}
+const { contenedor } = Astro.props;
+---
+
+<div class="filtros" role="group" aria-label="Filtrar por deporte" data-filtro-deporte={contenedor}>
+  <button class="filtro" type="button" data-valor="todo" aria-pressed="true">Todo</button>
+  {
+    Object.entries(DEPORTES).map(([clave, dep]) => (
+      <button class="filtro" type="button" data-valor={clave} aria-pressed="false">
+        {dep.emoji} {dep.nombre}
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-filtro-deporte]').forEach((grupo) => {
+    const contenedor = document.getElementById(grupo.dataset.filtroDeporte ?? '');
+    if (!contenedor) return;
+    const botones = Array.from(grupo.querySelectorAll<HTMLButtonElement>('button'));
+    const tarjetas = Array.from(contenedor.querySelectorAll<HTMLElement>('[data-deporte]'));
+
+    botones.forEach((b) =>
+      b.addEventListener('click', () => {
+        botones.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        const valor = b.dataset.valor;
+        tarjetas.forEach((t) => {
+          t.hidden = valor !== 'todo' && t.dataset.deporte !== valor;
+        });
+      })
+    );
+  });
+</script>

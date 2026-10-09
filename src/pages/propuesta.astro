@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { GRUPO } from '../config';
+---
+
+<Base titulo="Propuesta" descripcion="Qué es esta web, qué incluye y cómo se podría colaborar con el club.">
+  <div class="contenedor">
+    <div class="seccion contenido">
+      <h1>Propuesta de web para el club</h1>
+      <p style="font-size:1.15rem">
+        Esta web es una <strong>propuesta no oficial</strong>, hecha por alguien de la comunidad para enseñar cómo podrían verse en un solo sitio las salidas en bici
+        y las quedadas de running de {GRUPO.nombre}. No sustituye a Strava ni a los grupos de mensajería: los complementa.
+      </p>
+
+      <h2>Qué incluye</h2>
+      <ul>
+        <li>🚴 y 🏃 <strong>Salidas</strong> de bici y de correr juntas o por separado, con sus colores y emoticonos.</li>
+        <li><strong>Próxima salida</strong> destacada en la portada, con día, hora y punto de encuentro.</li>
+        <li><strong>Fichas de ruta</strong> con distancia, desnivel y, si hay archivo GPX, mapa, perfil de elevación y descarga.</li>
+        <li><strong>Galería de fotos</strong> de cada salida: basta con soltar las fotos en una carpeta.</li>
+        <li><strong>Calendario descargable</strong> (.ics) para añadir las salidas al móvil. Los eventos semanales se repiten solos.</li>
+        <li><strong>Vista previa</strong> al compartir los enlaces por WhatsApp, con título y descripción propios de cada salida.</li>
+      </ul>
+
+      <h2>Cómo se mantiene</h2>
+      <p>
+        Cada salida y cada ruta es un archivo de texto sencillo. Añadir una salida lleva un par de minutos y no hace falta saber programar. La web es estática, gratuita
+        de alojar y rápida en el móvil.
+      </p>
+
+      <h2>Qué se ha usado y qué no</h2>
+      <ul>
+        <li>Los datos de las salidas (día, hora, punto de encuentro, distancia) salen de los eventos del club en Strava.</li>
+        <li>No se ha usado el logo del club ni imágenes suyas. Los colores se inspiran en su identidad.</li>
+        <li>Mientras no sea oficial, la web muestra un aviso en todas las páginas y no se indexa en buscadores.</li>
+      </ul>
+
+      <h2>Hablemos</h2>
+      <p>Si os interesa, se puede adaptar el diseño, los textos y los deportes a lo que prefiráis, o dejarlo en nada si no os encaja.</p>
+      <div class="acciones">
+        {GRUPO.whatsapp && <a class="boton" href={GRUPO.whatsapp} rel="noopener" target="_blank">💬 Grupo de WhatsApp</a>}
+        {GRUPO.email && <a class="boton" href={`mailto:${GRUPO.email}`}>Escribir</a>}
+        {GRUPO.instagram && <a class="boton secundario" href={GRUPO.instagram} rel="noopener">Instagram</a>}
+        <a class="boton secundario" href={GRUPO.enlaceClub} rel="noopener" target="_blank">{GRUPO.textoBotonClub}</a>
+      </div>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,32 @@
+---
+interface Props {
+  coords: [number, number][]; // [lat, lon]
+  color?: string; // color de la línea (azul para bici, naranja para correr)
+}
+const { coords, color = '#2457d6' } = Astro.props;
+---
+
+<div class="mapa" id="mapa" data-coords={JSON.stringify(coords)} data-color={color} role="img" aria-label="Mapa del recorrido"></div>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  const el = document.getElementById('mapa');
+  if (el) {
+    const coords = JSON.parse(el.dataset.coords ?? '[]') as [number, number][];
+    if (coords.length > 1) {
+      const mapa = L.map(el, { scrollWheelZoom: false });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(mapa);
+
+      const linea = L.polyline(coords, { color: el.dataset.color ?? '#2457d6', weight: 5, opacity: 0.95 }).addTo(mapa);
+      L.circleMarker(coords[0]!, { radius: 8, color: '#fff', weight: 3, fillColor: '#030f31', fillOpacity: 1 })
+        .bindTooltip('Salida')
+        .addTo(mapa);
+      mapa.fitBounds(linea.getBounds(), { padding: [24, 24] });
+    }
+  }
+</script>

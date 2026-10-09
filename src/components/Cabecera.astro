@@ -1,0 +1,22 @@
+---
+import { GRUPO, MENU } from '../config';
+
+interface Props {
+  ruta: string;
+}
+const { ruta } = Astro.props;
+
+const activo = (href: string) => (href === '/' ? ruta === '/' : ruta.startsWith(href));
+---
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a class="marca" href="/">
+      {GRUPO.logo ? <img src={GRUPO.logo} alt="" width="34" height="34" /> : <span class="sello" aria-hidden="true">🥐</span>}
+      {GRUPO.nombre}
+    </a>
+    <nav class="nav" aria-label="Principal">
+      {MENU.map((item) => <a href={item.href} aria-current={activo(item.href) ? 'page' : undefined}>{item.texto}</a>)}
+    </nav>
+  </div>
+</header>

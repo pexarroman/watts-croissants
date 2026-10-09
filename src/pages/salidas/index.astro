@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FiltroDeporte from '../../components/FiltroDeporte.astro';
+import TarjetaSalida from '../../components/TarjetaSalida.astro';
+import { pasadas, proximas } from '../../lib/utils';
+
+const todas = await getCollection('salidas');
+const siguientes = proximas(todas);
+const anteriores = pasadas(todas);
+---
+
+<Base titulo="Salidas" descripcion="Próximas salidas en bici y quedadas para correr, y fotos de las anteriores.">
+  <div class="contenedor">
+    <div class="seccion">
+      <div class="seccion-cabecera">
+        <h1 style="margin:0">Salidas</h1>
+        <a class="boton secundario" href="/calendario.ics" download="salidas.ics">Añadir al calendario (.ics)</a>
+      </div>
+
+      <FiltroDeporte contenedor="lista-salidas" />
+
+      <div id="lista-salidas">
+        <h2 id="proximas">Próximas</h2>
+        {
+          siguientes.length > 0 ? (
+            <div class="rejilla">{siguientes.map((s) => <TarjetaSalida salida={s} />)}</div>
+          ) : (
+            <div class="vacio">No hay salidas programadas por ahora. ¡Vuelve pronto!</div>
+          )
+        }
+
+        <h2 id="anteriores" style="margin-top:48px">Anteriores</h2>
+        {
+          anteriores.length > 0 ? (
+            <div class="rejilla">{anteriores.map((s) => <TarjetaSalida salida={s} />)}</div>
+          ) : (
+            <div class="vacio">Las salidas ya hechas, con sus fotos, irán apareciendo aquí.</div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</Base>

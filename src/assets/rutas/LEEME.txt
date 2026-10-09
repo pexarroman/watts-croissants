@@ -1,0 +1,3 @@
+Fotos de portada de las rutas (opcional).
+Un archivo por ruta con el MISMO nombre que el archivo de la ruta (sin .md). Ejemplo:
+  src/content/rutas/aranjuez-ida-y-vuelta.md  ->  src/assets/rutas/aranjuez-ida-y-vuelta.jpg

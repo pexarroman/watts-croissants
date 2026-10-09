@@ -1,0 +1,56 @@
+---
+import '../styles/global.css';
+import Aviso from '../components/Aviso.astro';
+import Cabecera from '../components/Cabecera.astro';
+import Pie from '../components/Pie.astro';
+import { GRUPO } from '../config';
+import type { Deporte } from '../config';
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  imagen?: string; // ruta dentro de /public, por ejemplo "/og.jpg"
+  deporte?: Deporte; // cambia los colores de la página: bici = azul, correr = naranja
+}
+
+const { titulo, descripcion = GRUPO.descripcion, imagen = '/og.jpg', deporte } = Astro.props;
+const marca = GRUPO.oficial ? GRUPO.nombre : `${GRUPO.nombre} (propuesta no oficial)`;
+const tituloCompleto = titulo ? `${titulo} · ${marca}` : `${marca} · ${GRUPO.lema}`;
+const url = new URL(Astro.url.pathname, Astro.site);
+const urlImagen = new URL(imagen, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={url} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#030f31" />
+    {!GRUPO.oficial && <meta name="robots" content="noindex" />}
+
+    <!-- Vista previa al compartir en WhatsApp, Telegram, redes... -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={marca} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={urlImagen} />
+    <meta property="og:locale" content="es_ES" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body data-deporte={deporte}>
+    <a class="saltar" href="#principal">Saltar al contenido</a>
+    <Aviso />
+    <Cabecera ruta={Astro.url.pathname} />
+    <main id="principal">
+      <slot />
+    </main>
+    <Pie />
+  </body>
+</html>

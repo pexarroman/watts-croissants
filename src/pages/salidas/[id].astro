@@ -1,0 +1,99 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Galeria from '../../components/Galeria.astro';
+import { DEPORTES } from '../../config';
+import { capitalizar, esProxima, fechaEfectiva, formatoFecha, fotosDeSalida, miles, textoRepeticion } from '../../lib/utils';
+
+export async function getStaticPaths() {
+  const salidas = await getCollection('salidas');
+  return salidas.map((salida) => ({ params: { id: salida.id }, props: { salida } }));
+}
+
+const { salida } = Astro.props;
+const d = salida.data;
+const dep = DEPORTES[d.deporte];
+const { Content } = await render(salida);
+const fotos = fotosDeSalida(salida.id);
+const ruta = d.ruta ? await getEntry('rutas', d.ruta) : undefined;
+const proxima = esProxima(salida);
+const repite = textoRepeticion(salida);
+const fecha = capitalizar(formatoFecha(fechaEfectiva(salida)));
+
+// Si hay fotos, la primera se usa como vista previa al compartir el enlace
+const og = fotos[0] ? (await getImage({ src: fotos[0], width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+---
+
+<Base titulo={d.titulo} descripcion={`${dep.emoji} ${fecha} a las ${d.hora}. ${d.resumen}`} imagen={og} deporte={d.deporte}>
+  <div class="contenedor">
+    <p class="migas"><a href="/salidas/">← Todas las salidas</a></p>
+
+    <header>
+      <div class="etiquetas">
+        <span class="etiqueta deporte">{dep.emoji} {dep.nombre}</span>
+        {repite && <span class="etiqueta repite">{repite}</span>}
+      </div>
+      <p style="font-weight:800;color:var(--acento);margin-bottom:4px">{fecha} · {d.hora}</p>
+      <h1>{d.titulo}</h1>
+      <p class="suave" style="max-width:60ch;font-size:1.15rem">{d.resumen}</p>
+    </header>
+
+    <div class="seccion dos-columnas" style="padding-top:12px">
+      <div class="contenido">
+        <Content />
+      </div>
+
+      <aside class="panel">
+        <h3>📍 Punto de encuentro</h3>
+        <p>
+          <strong>{d.puntoEncuentro}</strong><br />
+          <span class="suave">Hora: {d.hora}{d.duracionH !== undefined && <> · duración aprox. {d.duracionH} h</>}</span>
+        </p>
+        {d.mapsUrl && <p><a href={d.mapsUrl} rel="noopener">Cómo llegar →</a></p>}
+
+        {
+          ruta && (
+            <>
+              <h3 style="margin-top:20px">{dep.emoji} Ruta</h3>
+              <p>
+                <a href={`/rutas/${ruta.id}/`}><strong>{ruta.data.titulo}</strong></a>
+                <br />
+                <span class="suave">
+                  {ruta.data.distanciaKm} km
+                  {ruta.data.desnivelM !== undefined && <> · +{miles(ruta.data.desnivelM)} m</>}
+                  {ruta.data.ritmo && <> · ritmo {ruta.data.ritmo}</>}
+                </span>
+              </p>
+            </>
+          )
+        }
+
+        {
+          d.enlace && (
+            <p style="margin-top:20px">
+              <a class="boton" href={d.enlace} rel="noopener" target="_blank">Ver evento en Strava</a>
+            </p>
+          )
+        }
+        {d.enlace && <p class="nota">Para ver el evento en Strava hay que tener sesión iniciada.</p>}
+      </aside>
+    </div>
+
+    {
+      fotos.length > 0 ? (
+        <section class="seccion" style="padding-top:0">
+          <h2>Fotos</h2>
+          <Galeria fotos={fotos} descripcion={d.titulo} />
+        </section>
+      ) : (
+        <section class="seccion" style="padding-top:0">
+          <h2>Fotos</h2>
+          <div class="vacio">
+            {proxima ? 'Las fotos se publicarán aquí después de la salida.' : 'Todavía no hay fotos de esta salida.'}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</Base>

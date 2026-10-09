@@ -1,0 +1,12 @@
+---
+import { GRUPO } from '../config';
+---
+
+{
+  !GRUPO.oficial && (
+    <div class="aviso" role="note">
+      <strong>Propuesta de web no oficial.</strong> Esta no es la web del club {GRUPO.nombre}. Los datos de las salidas salen de su página en Strava.{' '}
+      <a href="/propuesta/">Más información</a>
+    </div>
+  )
+}

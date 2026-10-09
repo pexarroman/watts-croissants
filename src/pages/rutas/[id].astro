@@ -1,0 +1,80 @@
+---
+import { getCollection, render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import MapaRuta from '../../components/MapaRuta.astro';
+import { DEPORTES } from '../../config';
+import { leerGpx, miles, perfilElevacion, portadaDeRuta, simplificar } from '../../lib/utils';
+
+export async function getStaticPaths() {
+  const rutas = await getCollection('rutas');
+  return rutas.map((ruta) => ({ params: { id: ruta.id }, props: { ruta } }));
+}
+
+const { ruta } = Astro.props;
+const d = ruta.data;
+const dep = DEPORTES[d.deporte];
+const { Content } = await render(ruta);
+
+const puntos = leerGpx(d.gpx);
+const coords = simplificar(puntos, 700).map((p) => [p.lat, p.lon] as [number, number]);
+const perfil = perfilElevacion(puntos);
+const colorLinea = d.deporte === 'correr' ? '#d9480f' : '#2457d6';
+
+const portada = portadaDeRuta(ruta.id);
+const og = portada ? (await getImage({ src: portada, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+
+const resumenDatos = [`${d.distanciaKm} km`, d.desnivelM !== undefined ? `+${d.desnivelM} m` : null, d.ritmo ? `ritmo ${d.ritmo}` : null]
+  .filter(Boolean)
+  .join(', ');
+---
+
+<Base titulo={d.titulo} descripcion={`${dep.emoji} ${d.titulo}: ${resumenDatos}. ${d.resumen}`} imagen={og} deporte={d.deporte}>
+  <div class="contenedor">
+    <p class="migas"><a href="/rutas/">← Todas las rutas</a></p>
+
+    <header>
+      <div class="etiquetas">
+        <span class="etiqueta deporte">{dep.emoji} {dep.nombre}</span>
+        <span class="etiqueta">{d.tipo}</span>
+        {d.dificultad && <span class="etiqueta">{d.dificultad}</span>}
+      </div>
+      <h1>{d.titulo}</h1>
+      <p class="suave" style="max-width:60ch;font-size:1.15rem">{d.resumen}</p>
+    </header>
+
+    <dl class="datos" style="margin:20px 0 24px">
+      <div class="dato"><dt>Distancia</dt><dd>{d.distanciaKm} km</dd></div>
+      {d.desnivelM !== undefined && <div class="dato"><dt>Desnivel +</dt><dd>{miles(d.desnivelM)} m</dd></div>}
+      {d.ritmo && <div class="dato"><dt>Ritmo</dt><dd style="text-transform:capitalize">{d.ritmo}</dd></div>}
+      <div class="dato"><dt>Salida desde</dt><dd style="font-size:1.05rem">{d.inicio}</dd></div>
+    </dl>
+
+    {coords.length > 1 && <MapaRuta coords={coords} color={colorLinea} />}
+
+    {
+      perfil && (
+        <figure class="perfil">
+          <svg viewBox={`0 0 ${perfil.w} ${perfil.h}`} role="img" aria-label={`Perfil de elevación: de ${perfil.min} a ${perfil.max} metros`} preserveAspectRatio="none">
+            <path class="area" d={perfil.area} />
+            <path class="linea" d={perfil.linea} vector-effect="non-scaling-stroke" />
+          </svg>
+          <figcaption>Perfil de elevación · de {perfil.min} m a {perfil.max} m</figcaption>
+        </figure>
+      )
+    }
+
+    {
+      (d.gpx || d.enlace) && (
+        <div class="acciones" style="margin-top:20px">
+          {d.gpx && <a class="boton" href={`/gpx/${d.gpx}`} download>Descargar GPX</a>}
+          {d.enlace && <a class="boton secundario" href={d.enlace} rel="noopener" target="_blank">Ver en Strava / Komoot / Wikiloc</a>}
+        </div>
+      )
+    }
+
+    <div class="seccion contenido">
+      <Content />
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,3 @@
+Aquí van los archivos .gpx de las rutas (los que exportas de Strava, Komoot o Wikiloc).
+Luego, en el archivo de la ruta (src/content/rutas/nombre.md), añade la línea:  gpx: "nombre-del-archivo.gpx"
+Puedes borrar este archivo cuando quieras; la carpeta se mantiene mientras tenga algún archivo dentro.

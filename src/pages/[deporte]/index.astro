@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TarjetaRuta from '../../components/TarjetaRuta.astro';
+import TarjetaSalida from '../../components/TarjetaSalida.astro';
+import { DEPORTES } from '../../config';
+import type { Deporte } from '../../config';
+import { pasadas, proximas } from '../../lib/utils';
+
+// Genera las dos páginas: /bici/ y /correr/
+export function getStaticPaths() {
+  return [{ params: { deporte: 'bici' } }, { params: { deporte: 'correr' } }];
+}
+
+const deporte = Astro.params.deporte as Deporte;
+const dep = DEPORTES[deporte];
+
+const textos: Record<Deporte, { titulo: string; texto: string }> = {
+  bici: {
+    titulo: 'Salidas y rutas en bici',
+    texto: 'Carretera, gravel y paseo. Cada ruta tiene su ficha con distancia, desnivel, punto de salida y, cuando hay GPX, mapa y perfil.',
+  },
+  correr: {
+    titulo: 'Quedadas para correr',
+    texto: 'Quedadas para correr con ritmo tranquilo y abiertas a todo el mundo. Cada una con su día, hora y lugar de encuentro.',
+  },
+};
+
+const salidas = (await getCollection('salidas')).filter((s) => s.data.deporte === deporte);
+const siguientes = proximas(salidas);
+const anteriores = pasadas(salidas);
+const rutas = (await getCollection('rutas'))
+  .filter((r) => r.data.deporte === deporte)
+  .sort((a, b) => b.data.publicada.getTime() - a.data.publicada.getTime());
+---
+
+<Base titulo={`${dep.emoji} ${dep.nombre}`} descripcion={textos[deporte].texto} deporte={deporte}>
+  <section class={`hero hero-deporte ${deporte}`}>
+    <div class="contenedor">
+      <h1>{dep.emoji} {textos[deporte].titulo}</h1>
+      <p>{textos[deporte].texto}</p>
+    </div>
+  </section>
+
+  <div class="contenedor">
+    <section class="seccion">
+      <h2>Próximas salidas</h2>
+      {
+        siguientes.length > 0 ? (
+          <div class="rejilla">{siguientes.map((s) => <TarjetaSalida salida={s} />)}</div>
+        ) : (
+          <div class="vacio">No hay salidas programadas por ahora.</div>
+        )
+      }
+    </section>
+
+    <section class="seccion" style="padding-top:0">
+      <h2>Rutas</h2>
+      {
+        rutas.length > 0 ? (
+          <div class="rejilla">{rutas.map((r) => <TarjetaRuta ruta={r} />)}</div>
+        ) : (
+          <div class="vacio">Todavía no hay rutas publicadas.</div>
+        )
+      }
+    </section>
+
+    {
+      anteriores.length > 0 && (
+        <section class="seccion" style="padding-top:0">
+          <h2>Salidas anteriores</h2>
+          <div class="rejilla">{anteriores.map((s) => <TarjetaSalida salida={s} />)}</div>
+        </section>
+      )
+    }
+  </div>
+</Base>

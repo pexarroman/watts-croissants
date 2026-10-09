@@ -1,0 +1,32 @@
+---
+import { GRUPO } from '../config';
+const año = new Date().getFullYear();
+const enlaces = [
+  GRUPO.enlaceClub && { href: GRUPO.enlaceClub, texto: 'Club en Strava' },
+  GRUPO.whatsapp && { href: GRUPO.whatsapp, texto: 'Grupo de WhatsApp' },
+  GRUPO.instagram && { href: GRUPO.instagram, texto: 'Instagram' },
+  GRUPO.email && { href: `mailto:${GRUPO.email}`, texto: GRUPO.email },
+].filter(Boolean) as { href: string; texto: string }[];
+---
+
+<footer class="pie">
+  <div class="contenedor">
+    <p>
+      © {año} {GRUPO.nombre}
+      {!GRUPO.oficial && <> · Propuesta no oficial, sin relación con el club</>}
+    </p>
+    {
+      enlaces.length > 0 && (
+        <ul>
+          {enlaces.map((e) => (
+            <li>
+              <a href={e.href} rel="noopener">
+                {e.texto}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</footer>

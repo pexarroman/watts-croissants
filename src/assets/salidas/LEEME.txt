@@ -1,0 +1,6 @@
+Fotos de las salidas.
+Crea una carpeta con el MISMO nombre que el archivo de la salida (sin .md). Ejemplo:
+  src/content/salidas/2026-10-10-aranjuez-ida-y-vuelta.md
+  src/assets/salidas/2026-10-10-aranjuez-ida-y-vuelta/01.jpg, 02.jpg, ...
+Las fotos salen solas en la galería de esa salida (la primera es la portada).
+Formatos: jpg, png o webp. Las fotos .heic del iPhone hay que convertirlas antes.

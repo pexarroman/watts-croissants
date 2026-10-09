@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FiltroDeporte from '../../components/FiltroDeporte.astro';
+import TarjetaRuta from '../../components/TarjetaRuta.astro';
+
+const rutas = (await getCollection('rutas')).sort((a, b) => b.data.publicada.getTime() - a.data.publicada.getTime());
+---
+
+<Base titulo="Rutas" descripcion="Todas las rutas de bici y de correr, con distancia, desnivel y, cuando hay GPX, mapa y perfil.">
+  <div class="contenedor">
+    <div class="seccion">
+      <h1>Rutas</h1>
+      <p class="suave" style="max-width:60ch">Cada ruta tiene su ficha. Cuando hay archivo GPX se ve el mapa y el perfil de desnivel y se puede descargar para el móvil o el ciclocomputador.</p>
+
+      <FiltroDeporte contenedor="lista-rutas" />
+
+      {
+        rutas.length > 0 ? (
+          <div class="rejilla" id="lista-rutas">{rutas.map((r) => <TarjetaRuta ruta={r} />)}</div>
+        ) : (
+          <div class="vacio" id="lista-rutas">Todavía no hay rutas publicadas.</div>
+        )
+      }
+    </div>
+  </div>
+</Base>

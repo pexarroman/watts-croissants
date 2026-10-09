@@ -1,0 +1,107 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import FiltroDeporte from '../components/FiltroDeporte.astro';
+import TarjetaRuta from '../components/TarjetaRuta.astro';
+import TarjetaSalida from '../components/TarjetaSalida.astro';
+import { DEPORTES, GRUPO } from '../config';
+import { capitalizar, fechaEfectiva, formatoFecha, miles, proximas, textoRepeticion } from '../lib/utils';
+
+const salidas = proximas(await getCollection('salidas'));
+const siguiente = salidas[0];
+const resto = salidas.slice(1, 7);
+const rutaSiguiente = siguiente?.data.ruta ? await getEntry('rutas', siguiente.data.ruta) : undefined;
+const depSiguiente = siguiente ? DEPORTES[siguiente.data.deporte] : undefined;
+const repiteSiguiente = siguiente ? textoRepeticion(siguiente) : null;
+
+const rutas = (await getCollection('rutas')).sort((a, b) => b.data.publicada.getTime() - a.data.publicada.getTime());
+---
+
+<Base>
+  <section class="hero">
+    <div class="contenedor">
+      <h1>{GRUPO.lema}</h1>
+      <p>Salidas en bici y quedadas para correr, con sus rutas, mapas y fotos. Elige tu deporte o mira todo junto.</p>
+      <div class="elige">
+        <a class="bici" href={DEPORTES.bici.pagina}>
+          <span class="emoji" aria-hidden="true">{DEPORTES.bici.emoji}</span>
+          <span>Bici<small>Rutas y salidas en bici</small></span>
+        </a>
+        <a class="correr" href={DEPORTES.correr.pagina}>
+          <span class="emoji" aria-hidden="true">{DEPORTES.correr.emoji}</span>
+          <span>Correr<small>Quedadas para correr</small></span>
+        </a>
+      </div>
+      {GRUPO.whatsapp && <p style="margin-top:18px"><a class="boton secundario" href={GRUPO.whatsapp} rel="noopener" target="_blank">💬 Unirme al grupo de WhatsApp</a></p>}
+    </div>
+  </section>
+
+  <section class="seccion">
+    <div class="contenedor">
+      <div class="seccion-cabecera">
+        <h2>Próxima salida</h2>
+        <a href="/salidas/">Ver todas las salidas →</a>
+      </div>
+
+      {
+        siguiente && depSiguiente ? (
+          <article class="destacada" data-deporte={siguiente.data.deporte}>
+            <div>
+              <div class="etiquetas">
+                <span class="etiqueta deporte">{depSiguiente.emoji} {depSiguiente.nombre}</span>
+                {repiteSiguiente && <span class="etiqueta repite">{repiteSiguiente}</span>}
+              </div>
+              <p class="fecha-grande">{capitalizar(formatoFecha(fechaEfectiva(siguiente)))} · {siguiente.data.hora}</p>
+              <h3>{siguiente.data.titulo}</h3>
+              <p>{siguiente.data.resumen}</p>
+              <p class="suave">📍 Punto de encuentro: <strong>{siguiente.data.puntoEncuentro}</strong></p>
+            </div>
+            {rutaSiguiente && (
+              <dl class="datos">
+                <div class="dato"><dt>Distancia</dt><dd>{rutaSiguiente.data.distanciaKm} km</dd></div>
+                {rutaSiguiente.data.desnivelM !== undefined && (
+                  <div class="dato"><dt>Desnivel</dt><dd>+{miles(rutaSiguiente.data.desnivelM)} m</dd></div>
+                )}
+                {rutaSiguiente.data.ritmo && <div class="dato"><dt>Ritmo</dt><dd style="text-transform:capitalize">{rutaSiguiente.data.ritmo}</dd></div>}
+              </dl>
+            )}
+            <div class="acciones">
+              <a class="boton" href={`/salidas/${siguiente.id}/`}>Ver detalles</a>
+              {siguiente.data.enlace && <a class="boton secundario" href={siguiente.data.enlace} rel="noopener" target="_blank">Evento en Strava</a>}
+            </div>
+          </article>
+        ) : (
+          <div class="vacio">
+            <p><strong>Aún no hay ninguna salida programada.</strong></p>
+            <p>Mientras tanto, mira las rutas.</p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    resto.length > 0 && (
+      <section class="seccion" style="padding-top:0">
+        <div class="contenedor">
+          <div class="seccion-cabecera">
+            <h2>Después</h2>
+          </div>
+          <FiltroDeporte contenedor="salidas-home" />
+          <div class="rejilla" id="salidas-home">{resto.map((s) => <TarjetaSalida salida={s} />)}</div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="seccion" style="padding-top:0">
+    <div class="contenedor">
+      <div class="seccion-cabecera">
+        <h2>Rutas</h2>
+        <a href="/rutas/">Ver todas las rutas →</a>
+      </div>
+      <FiltroDeporte contenedor="rutas-home" />
+      <div class="rejilla" id="rutas-home">{rutas.map((r) => <TarjetaRuta ruta={r} />)}</div>
+    </div>
+  </section>
+</Base>

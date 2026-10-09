@@ -1,0 +1,35 @@
+---
+import { getImage } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { DEPORTES } from '../config';
+import { miles, portadaDeRuta } from '../lib/utils';
+
+interface Props {
+  ruta: CollectionEntry<'rutas'>;
+}
+const { ruta } = Astro.props;
+const d = ruta.data;
+const dep = DEPORTES[d.deporte];
+const portada = portadaDeRuta(ruta.id);
+const img = portada ? await getImage({ src: portada, width: 640, height: 427, format: 'webp' }) : null;
+---
+
+<article class="tarjeta" data-deporte={d.deporte}>
+  <a class="enlace-tarjeta" href={`/rutas/${ruta.id}/`}>
+    {img && (
+      <div class="imagen">
+        <img src={img.src} width={img.attributes.width} height={img.attributes.height} alt="" loading="lazy" decoding="async" />
+      </div>
+    )}
+    <div class="cuerpo">
+      <div class="etiquetas">
+        <span class="etiqueta deporte">{dep.emoji} {dep.nombre}</span>
+        <span class="etiqueta">{d.tipo}</span>
+        {d.ritmo && <span class="etiqueta">ritmo {d.ritmo}</span>}
+      </div>
+      <h3>{d.titulo}</h3>
+      <p class="suave">{d.resumen}</p>
+      <p class="meta"><strong>{d.distanciaKm} km</strong>{d.desnivelM !== undefined && <> · +{miles(d.desnivelM)} m</>}</p>
+    </div>
+  </a>
+</article>
