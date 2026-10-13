@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import { GRUPO } from '../config';
+
+const contacto = GRUPO.email
+  ? { texto: GRUPO.email, href: `mailto:${GRUPO.email}` }
+  : GRUPO.instagram
+    ? { texto: 'por Instagram', href: GRUPO.instagram }
+    : null;
+---
+
+<Base titulo="Aviso legal y privacidad" descripcion="Quién publica esta web, qué datos recoge (ninguno) y cómo pedir que se retire algo.">
+  <div class="contenedor">
+    <div class="seccion contenido">
+      <h1>Aviso legal y privacidad</h1>
+
+      <h2>Quién publica esta web</h2>
+      <p>
+        Esta web la publica {GRUPO.titular}, a título particular y sin ánimo de lucro. No hay publicidad, venta ni cobro de ningún tipo.
+        {contacto && <>Contacto: <a href={contacto.href} rel="noopener">{contacto.texto}</a>.</>}
+      </p>
+
+      <h2>Qué es y qué no es</h2>
+      <p>
+        {GRUPO.oficial
+          ? `Es la web de ${GRUPO.nombre}.`
+          : `Es una propuesta no oficial para el club ${GRUPO.nombre}. No tiene relación con el club ni habla en su nombre.`}
+        El nombre del club y su identidad pertenecen a sus titulares. Los datos de las salidas (día, hora, punto de encuentro y distancia) proceden de la información
+        pública del club en Strava y pueden cambiar: antes de ir, confirma siempre en el canal oficial del club.
+      </p>
+
+      <h2>Cookies y datos personales</h2>
+      <p>
+        Esta web <strong>no usa cookies</strong>, ni herramientas de analítica o publicidad, ni formularios, ni registro de usuarios. No recoge ni guarda datos personales,
+        y por eso no muestra ningún banner de cookies.
+      </p>
+
+      <h2>Servicios de terceros</h2>
+      <ul>
+        <li>
+          <strong>Alojamiento (Cloudflare).</strong> La web se sirve desde Cloudflare Pages, que puede registrar datos técnicos de la conexión (como la dirección IP) por
+          motivos de seguridad y funcionamiento.
+        </li>
+        <li>
+          <strong>Mapas (OpenStreetMap).</strong> En las fichas de ruta con mapa, tu navegador carga los mapas desde los servidores de OpenStreetMap, que reciben tu
+          dirección IP. © colaboradores de <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>.
+        </li>
+        <li>
+          <strong>Enlaces externos</strong> (Strava, WhatsApp, Instagram…). Al pulsarlos sales de esta web y se aplican las políticas de cada servicio.
+        </li>
+      </ul>
+
+      <h2>Fotos</h2>
+      <p>
+        Las fotos de las salidas se publican solo con el consentimiento de las personas que aparecen en ellas. Si sales en alguna y quieres que se quite o se cambie,
+        {contacto ? <>escríbeme ({contacto.texto === 'por Instagram' ? <a href={contacto.href} rel="noopener">Instagram</a> : <a href={contacto.href}>{contacto.texto}</a>})</> : <>escríbeme</>} y se retira sin dar explicaciones.
+      </p>
+
+      <h2>Responsabilidad</h2>
+      <p>
+        Los GPX, mapas y recomendaciones son orientativos. Cada persona participa en las salidas bajo su propia responsabilidad, respetando las normas de tráfico y
+        adaptando el esfuerzo a su forma física y a las condiciones del día.
+      </p>
+
+      <p class="suave">Última actualización: octubre de 2026.</p>
+    </div>
+  </div>
+</Base>

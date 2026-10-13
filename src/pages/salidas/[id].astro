@@ -1,0 +1,122 @@
+---
+import { getCollection, render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Galeria from '../../components/Galeria.astro';
+import MapaRuta from '../../components/MapaRuta.astro';
+import { DEPORTES } from '../../config';
+import { capitalizar, esProxima, fechaEfectiva, formatoFecha, fotosDeSalida, leerGpx, miles, perfilElevacion, simplificar, textoRepeticion } from '../../lib/utils';
+
+export async function getStaticPaths() {
+  const salidas = await getCollection('salidas');
+  return salidas.map((salida) => ({ params: { id: salida.id }, props: { salida } }));
+}
+
+const { salida } = Astro.props;
+const d = salida.data;
+const dep = DEPORTES[d.deporte];
+const { Content } = await render(salida);
+const fotos = fotosDeSalida(salida.id);
+const puntos = leerGpx(d.gpx);
+const coords = simplificar(puntos, 700).map((p) => [p.lat, p.lon] as [number, number]);
+const perfil = perfilElevacion(puntos);
+const colorLinea = d.deporte === 'correr' ? '#d9480f' : '#2457d6';
+const hayRuta = d.distanciaKm !== undefined;
+const proxima = esProxima(salida);
+const repite = textoRepeticion(salida);
+const fecha = capitalizar(formatoFecha(fechaEfectiva(salida)));
+
+// Si hay fotos, la primera se usa como vista previa al compartir el enlace
+const og = fotos[0] ? (await getImage({ src: fotos[0], width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+---
+
+<Base titulo={d.titulo} descripcion={`${dep.emoji} ${fecha} a las ${d.hora}. ${d.resumen}`} imagen={og} deporte={d.deporte}>
+  <div class="contenedor">
+    <p class="migas"><a href="/salidas/">← Todas las salidas</a></p>
+
+    <header>
+      <div class="etiquetas">
+        <span class="etiqueta deporte">{dep.emoji} {dep.nombre}</span>
+        {repite && <span class="etiqueta repite">{repite}</span>}
+      </div>
+      <p style="font-weight:800;color:var(--acento);margin-bottom:4px">{fecha} · {d.hora}</p>
+      <h1>{d.titulo}</h1>
+      <p class="suave" style="max-width:60ch;font-size:1.15rem">{d.resumen}</p>
+    </header>
+
+    {
+      hayRuta && (
+        <dl class="datos" style="margin:20px 0 4px">
+          <div class="dato"><dt>Distancia</dt><dd>{d.distanciaKm} km</dd></div>
+          {d.desnivelM !== undefined && <div class="dato"><dt>Desnivel +</dt><dd>{miles(d.desnivelM)} m</dd></div>}
+          {d.ritmo && <div class="dato"><dt>Ritmo</dt><dd style="text-transform:capitalize">{d.ritmo}</dd></div>}
+          {d.tipo && <div class="dato"><dt>Tipo</dt><dd style="text-transform:capitalize">{d.tipo}</dd></div>}
+          {d.dificultad && <div class="dato"><dt>Dificultad</dt><dd style="text-transform:capitalize">{d.dificultad}</dd></div>}
+        </dl>
+      )
+    }
+
+    <div class="seccion dos-columnas" style="padding-top:12px">
+      <div class="contenido">
+        <Content />
+      </div>
+
+      <aside class="panel">
+        <h3>📍 Punto de encuentro</h3>
+        <p>
+          <strong>{d.puntoEncuentro}</strong><br />
+          <span class="suave">Hora: {d.hora}{d.duracionH !== undefined && <> · duración aprox. {d.duracionH} h</>}</span>
+        </p>
+        {d.mapsUrl && <p><a href={d.mapsUrl} rel="noopener">Cómo llegar →</a></p>}
+
+        {
+          d.enlace && (
+            <p style="margin-top:20px">
+              <a class="boton" href={d.enlace} rel="noopener" target="_blank">Ver evento en Strava</a>
+            </p>
+          )
+        }
+        {d.enlace && <p class="nota">Para ver el evento en Strava hay que tener sesión iniciada.</p>}
+      </aside>
+    </div>
+
+    {coords.length > 1 && <MapaRuta coords={coords} color={colorLinea} />}
+
+    {
+      perfil && (
+        <figure class="perfil">
+          <svg viewBox={`0 0 ${perfil.w} ${perfil.h}`} role="img" aria-label={`Perfil de elevación: de ${perfil.min} a ${perfil.max} metros`} preserveAspectRatio="none">
+            <path class="area" d={perfil.area} />
+            <path class="linea" d={perfil.linea} vector-effect="non-scaling-stroke" />
+          </svg>
+          <figcaption>Perfil de elevación · de {perfil.min} m a {perfil.max} m</figcaption>
+        </figure>
+      )
+    }
+
+    {
+      (d.gpx || d.enlaceRuta) && (
+        <div class="acciones" style="margin-top:20px">
+          {d.gpx && <a class="boton" href={`/gpx/${d.gpx}`} download>Descargar GPX</a>}
+          {d.enlaceRuta && <a class="boton secundario" href={d.enlaceRuta} rel="noopener" target="_blank">Ver la ruta en Strava / Komoot / Wikiloc</a>}
+        </div>
+      )
+    }
+
+    {
+      fotos.length > 0 ? (
+        <section class="seccion" style="padding-top:12px">
+          <h2>Fotos</h2>
+          <Galeria fotos={fotos} descripcion={d.titulo} />
+        </section>
+      ) : (
+        <section class="seccion" style="padding-top:12px">
+          <h2>Fotos</h2>
+          <div class="vacio">
+            {proxima ? 'Las fotos se publicarán aquí después de la salida.' : 'Todavía no hay fotos de esta salida.'}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</Base>

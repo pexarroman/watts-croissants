@@ -1,0 +1,82 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  fotos: ImageMetadata[];
+  descripcion: string; // texto alternativo base, por ejemplo el título de la salida
+}
+const { fotos, descripcion } = Astro.props;
+
+const items = await Promise.all(
+  fotos.map(async (foto, i) => {
+    const mini = await getImage({ src: foto, width: 480, height: 360, fit: 'cover', format: 'webp' });
+    const grande = await getImage({ src: foto, width: 1800, format: 'webp' });
+    return { mini, grande, alt: `${descripcion} (foto ${i + 1} de ${fotos.length})` };
+  })
+);
+---
+
+{
+  items.length > 0 && (
+    <>
+      <div class="galeria" data-galeria>
+        {items.map((it, i) => (
+          <button type="button" data-indice={i} data-grande={it.grande.src} data-alt={it.alt} aria-label={`Ampliar foto ${i + 1}`}>
+            <img src={it.mini.src} width={it.mini.attributes.width} height={it.mini.attributes.height} alt={it.alt} loading="lazy" decoding="async" />
+          </button>
+        ))}
+      </div>
+
+      <dialog class="visor" id="visor" aria-label="Visor de fotos">
+        <div class="visor-marco">
+          <img id="visor-img" src="" alt="" />
+        </div>
+        <div class="visor-botones">
+          <button type="button" id="visor-ant">← Anterior</button>
+          <button type="button" id="visor-cerrar">Cerrar</button>
+          <button type="button" id="visor-sig">Siguiente →</button>
+        </div>
+      </dialog>
+    </>
+  )
+}
+
+<script>
+  const galeria = document.querySelector<HTMLElement>('[data-galeria]');
+  const visor = document.getElementById('visor') as HTMLDialogElement | null;
+  const img = document.getElementById('visor-img') as HTMLImageElement | null;
+
+  if (galeria && visor && img) {
+    const botones = Array.from(galeria.querySelectorAll<HTMLButtonElement>('button'));
+    let actual = 0;
+
+    const mostrar = (i: number) => {
+      actual = (i + botones.length) % botones.length;
+      const b = botones[actual]!;
+      img.src = b.dataset.grande ?? '';
+      img.alt = b.dataset.alt ?? '';
+    };
+
+    botones.forEach((b, i) =>
+      b.addEventListener('click', () => {
+        mostrar(i);
+        visor.showModal();
+      })
+    );
+
+    document.getElementById('visor-cerrar')?.addEventListener('click', () => visor.close());
+    document.getElementById('visor-ant')?.addEventListener('click', () => mostrar(actual - 1));
+    document.getElementById('visor-sig')?.addEventListener('click', () => mostrar(actual + 1));
+
+    // Cerrar al pulsar fuera de la foto
+    visor.addEventListener('click', (e) => {
+      if (e.target === visor || (e.target as HTMLElement).classList.contains('visor-marco')) visor.close();
+    });
+
+    visor.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') mostrar(actual - 1);
+      if (e.key === 'ArrowRight') mostrar(actual + 1);
+    });
+  }
+</script>
